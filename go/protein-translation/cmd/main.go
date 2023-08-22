@@ -1,23 +1,26 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"protein"
+)
 
 func main() {
-	var bom_dia = "Bom dia!"
-	var addr *string = &bom_dia
-	var addr_addr *string = addr
-	fmt.Printf("addr: %v, addr_addr: %v\n", addr, addr_addr)
+	mm := protein.NewMultiMap()
+	mm.Add([]string{":---"}, ":---")
+	mm.Add([]string{"AUG"}, "Methionine")
+	mm.Add([]string{"UUU", "UUC"}, "Phenylalanine")
+	mm.Add([]string{"UUA", "UUG"}, "Leucine")
+	mm.Add([]string{"UCU", "UCC", "UCA", "UCG"}, "Serine")
+	mm.Add([]string{"UAU", "UAC"}, "Tyrosine")
+	mm.Add([]string{"UGU", "UGC"}, "Cysteine")
+	mm.Add([]string{"UGG"}, "Tryptophan")
+	mm.Add([]string{"UAA", "UAG", "UGA"}, "STOP")
 
-	fmt.Println("bom_dia->addr_addr:", *addr_addr)
-	var boa_noite string = "Boa noite!"
-	addr_addr = &boa_noite
-	fmt.Println("boa_noite->addr_addr:", *addr_addr)
+	mm.Add([]string{"AUG"}, "START")
 
-	boa_noite = "não sou mais boa noite!"
-	fmt.Println("addr_addr:", *addr_addr)
-	fmt.Println("boa_noite:", boa_noite)
-	fmt.Println("addr:", *addr)
+	fmt.Println(mm.GetValue("UGC"))
+	fmt.Println(mm.GetValue("UCA"))
 
-	fmt.Println("this is the main entry point.")
-
+	fmt.Println(mm.GetKeys("STOP"))
 }
