@@ -1,60 +1,47 @@
 package sublist
 
-import "fmt"
-
 // Relation type is defined in relations.go file.
 
 func Sublist(l1, l2 []int) Relation {
-	if IsEqualSize(l1, l2) {
-		if IsAnyEmpty(l1, l2) {
+	sizeA, sizeB:=len(l1),len(l2)
+
+	if sizeA == sizeB  {
+		if sizeA == 0 && sizeB == 0 {
 			return RelationEqual
+		} else {
+			result:=RelationEqual
+			for i:=0; i<sizeA; i++ {
+				if l1[i] != l2[i] {
+					result = RelationUnequal
+					break
+				}
+			}
+			return result
 		}
-		if !IsSubList(l1, l2) {
+	} else {
+		if (sizeA > 0 && sizeB == 0) || (sizeB > 0 && sizeA == 0) {
+			if sizeA > 0 {
+				return RelationSuperlist
+			} else {
+				return RelationSublist
+			}
+		} else {
 			return RelationUnequal
 		}
-		return RelationEqual
-	} else {
-		if IsSubList(l1, l2) {
-			if len(l2) > len(l1) {
-				return RelationSublist
-			} else {
-				return RelationSuperlist
-			}
-		}
-		return RelationUnequal
 	}
-	return RelationUnequal
 }
 
-func IsEqualSize(list1, list2 []int) bool {
-	 size1, size2:=len(list1), len(list2); 
-	 return size1 == size2
-}
-
-func IsAnyEmpty(list1, list2 []int) bool {
-	size1, size2:=len(list1), len(list2); 
-	return size1 == 0 || size2 == 0
-}
-
-func IsSubList(list1, list2 []int) bool {
-	smallList, bigList,sSize, bSize := &list1, &list2, len(list1), len(list2)
-	if size1, size2:=len(list1), len(list2); size1>size2  {
-		smallList, bigList,sSize, bSize = &list2, &list1, len(list2), len(list1)
-	}
-
-	fmt.Printf("list1=%v, list2=%v\n", list1, list2)
+func IsSubList(smallList, bigList []int) bool {
+	bSize, sSize:=len(bigList), len(smallList)
 
 	result:=false
 	for i:=0; i <=bSize - sSize;i++ {
 		result=true
-		for j:=i; j< sSize; j++ {
-			sl, bl := *smallList, *bigList
-			fmt.Printf("%d=%d,", sl[i], sl[j])
-			if sl[j] != bl[j] {
+		for j:=i; j<= sSize; j++ {
+			if smallList[j] != bigList[j] {
 				result=false
 				break
 			}
-			fmt.Println()
 		}
 	}   
 
