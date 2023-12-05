@@ -2,7 +2,6 @@ package wordy
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 )
@@ -23,81 +22,6 @@ type Calc struct {
 	operation 
 }
 
-func parseCalc(textCalc ...string) Calc {
-	numOpNum:=func(n1 float64, op operation, n2 float64) Calc {
-		c:=Calc{n1, op}
-		if result, ok:=c.Execute(n2); ok {
-			return result
-		}
-
-		return c
-	}
-
-	opNum:=func(c Calc, op operation, n2 float64) Calc {
-		c.operation = op
-		if result, ok:=c.Execute(n2); ok {
-			return result
-		}
-
-		return c
-	}
-
-	textToOp:=func(textOp string) operation {
-		switch textOp {
-		case "plus":
-			return opPlus
-		case "minus":
-			return opMinus
-		case "multiplied by":
-			return opMultiply
-		case "divided by":
-			return opDivide
-		default:
-			return opEqual
-		}
-	}
-
-	textToFloat:=func(textValue string, value *float64) bool {
-		if result, ok:=strconv.ParseFloat(textValue, 64); ok == nil {
-			*value = result
-			return true
-		}
-		return false
-	}
-
-	var result Calc = Calc{0, opEqual}
-	for i:= range textCalc {
-		params:=strings.Split(strings.Trim(textCalc[i], " "), " ")
-		if len(params) >= 2 && params[1] == "by" {
-			params[0]=params[0] + " by"
-			temp:=params[:1]
-			temp=append(temp, params[2:]...)
-			params=temp
-		} 
-		
-		if pCount:=len(params); pCount >= 3 {
-			param0, param2:=0.0,0.0
-			if pCount > 3 {
-				params=params[1:]
-			}
-
-			if textToFloat(params[0], &param0) && textToFloat(params[2], &param2) {
-				result=numOpNum(param0, textToOp(params[1]), param2)
-			}
-		} else if pCount == 2 {
-			if param, ok:=strconv.ParseFloat(params[1], 64); ok == nil {
-				result=opNum(result, textToOp(params[0]), param)
-			}
-		} else {
-			if param, ok:=strconv.ParseFloat(params[0], 64); ok == nil {
-				result=opNum(result, opEqual, param)
-			}
-		}
-	}
-
-	return result
-} 
-
 func(c Calc) Execute(n2 float64) (Calc, bool) {
 	var result Calc
 	var OK bool
@@ -109,7 +33,7 @@ func(c Calc) Execute(n2 float64) (Calc, bool) {
 	case opMultiply:
 		result, OK= Calc{c.n1 * n2, opEqual}, true
 	case opDivide:
-		if n2 > 0 {
+		if n2 != 0 {
 			result, OK= Calc{c.n1 / n2, opEqual}, true
 		} else {
 			result, OK= Calc{0, opEqual}, false
@@ -121,24 +45,165 @@ func(c Calc) Execute(n2 float64) (Calc, bool) {
 	return result, OK
 }
 
-func Answer(question string) (int, bool) {
-	req:= regexp.MustCompile(`(-?\d*\s)(plus|minus|multiplied by|divided by)(\s-?\d*)`)
-	// fqs :=req.FindAll([]byte(question), -1)
-	fqs :=req.FindAll([]byte(question), -1)
-	fmt.Println(question)
-	var result Calc
-	for i:=range fqs {
-		fmt.Println(string(fqs[i]))
-		c:=parseCalc(string(fqs[i]))
-		if result.operation == opNaN {
-			result = c
-		} else {
-			result.operation = c.operation
-			if r, ok :=result.Execute(c.n1); ok {
-				result = r
-			}
+func textToOp(textOp string) operation {
+	switch textOp {
+	case "plus":
+		return opPlus
+	case "minus":
+		return opMinus
+	case "multiplied":
+		return opMultiply
+	case "divided":
+		return opDivide
+	default:
+		return opEqual
+	}
+}
+
+type WordState struct {
+	state string
+	calc Calc
+}
+
+func NewWordState(question string) (*WordState, string) {
+	if word, rest:=getNextWord(question); word != "" {
+		return &WordState{state: word, calc: Calc{}}, rest
+	}
+	return nil, question
+}
+
+func (w *WordState) UpdateState(question string, verifier func(next string, calc *Calc) bool) (string, bool) {
+	OK:=false
+	next, rest:=getNextWord(question)
+	if verifier != nil {
+		OK=verifier(next, &w.calc)
+		if OK {
+			w.state = next
 		}
 	}
 
-	return int(result.n1), true
+	return rest, OK
+}
+
+
+func getNextWord(text string) (string, string) {
+	words:=strings.Split(strings.ToLower(strings.Trim(text, " ")), " ")
+	if len(words) > 0 {
+		if len(words[0]) == len(text) {
+			return words[0], ""
+		}
+		return words[0], text[len(words[0])+1:]
+	}
+	return "", text
+}
+
+func stateWhat(question string, ws *WordState) (string, bool) {
+	rest, ok:=ws.UpdateState(question, func(next string, calc *Calc) bool {
+		return next == "is"
+	})
+
+	return rest, ok
+}
+
+func stateIs(question string, ws *WordState) (string, bool) {
+	rest, ok:=ws.UpdateState(question, func(next string, calc *Calc) bool {
+		if next[len(next)-1] == '?' {
+			next=next[:len(next)-1]
+		}
+		if value, err:=strconv.ParseInt(next, 0, 64); err == nil {
+			calc.n1 = float64(value)
+			return true
+		}
+		return false
+	})
+
+	return rest, ok
+}
+
+func stateN1(question string, ws *WordState) (string, bool) {
+	rest, ok:=ws.UpdateState(question, func(next string, calc *Calc) bool {
+		if isOp:= next == "plus" || next == "minus" || next == "multiplied" || next == "divided"; isOp {
+			ws.calc.operation=textToOp(next)
+			return true
+		}
+		return false
+	})
+
+	return rest, ok
+}
+
+func stateOperation(question string, ws *WordState) (string, bool) {
+	rest, ok:=ws.UpdateState(question, func(next string, calc *Calc) bool {
+		if next[len(next)-1] == '?' {
+			next=next[:len(next)-1]
+		}
+		if value, err:=strconv.ParseInt(next, 0, 64); err == nil {
+			result, _:= calc.Execute(float64(value))
+			calc.n1 = result.n1
+			return true
+		}
+		return false
+	})
+
+	return rest, ok
+}
+
+func stateBy(question string, ws *WordState) (string, bool) {
+	rest, ok:=ws.UpdateState(question, func(next string, calc *Calc) bool {
+		return next == "by"
+	})
+
+	return rest, ok
+}
+
+
+func Answer(question string) (int, bool) {
+	fmt.Println(question)
+	ok:=false
+	ws, rest:=NewWordState(question)
+	if (ws != nil) {
+		for len(rest) > 0 {
+			switch ws.state {
+			case "what":
+				if rest, ok=stateWhat(rest, ws); !ok {
+					goto endloop
+				}
+			case "is":
+				if rest, ok=stateIs(rest, ws); !ok {
+					goto endloop
+				}
+				ws.state = "n1"
+			case "n1": 
+				if rest, ok=stateN1(rest, ws); !ok {
+					goto endloop
+				}
+				if ws.state == "multiplied" || ws.state == "divided" {
+					ws.state = "by"
+				} else {
+					ws.state = "operation"
+				}
+			case "operation":
+				if rest, ok=stateOperation(rest, ws); !ok {
+					goto endloop
+				}
+				ws.state = "n1"
+			case "by":
+				if rest, ok=stateBy(rest, ws); !ok {
+					goto endloop
+				}
+				ws.state = "operation"
+			default:
+				ok=false
+				goto endloop
+			}
+		}
+	}
+	
+endloop:
+	fmt.Println(ws.calc.n1)
+	if ok {
+		return int(ws.calc.n1), true
+	} 
+
+	return 0, false
 }
