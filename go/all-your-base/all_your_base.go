@@ -48,16 +48,16 @@ func isAccordingToBase(values []int, base int) bool {
 	return result
 }
 
-func (bc BaseConverter) ToBase10(b Base, values []int) int {
+func (bc BaseConverter) ToBase10(base Base, values []int) int {
 	li:=len(values)-1
-	sum:=0
-	bsize:=float64(bc.inputBase.Size())
+	result:=0
+	b:=float64(base.Size())
 	for i:=range values {
 		value:=values[li-i]
-		sum+=int(float64(value) * math.Pow(bsize, float64(i)))
+		result+=int(float64(value) * math.Pow(b, float64(i)))
 	}
 
-	return sum
+	return result
 }
 
 func getExp(sum, base int) float64 {
@@ -73,12 +73,10 @@ func getValue(cnst, base int, exp float64) int {
 	return cnst * int(math.Pow(float64(base), exp))
 }
 
-func getConstAndExp(sum int, base Base) (int, int) {
-	b:=base.Size()
-
-	fexp:=getExp(sum, b)
+func getConstAndExp(sum, base int) (int, int) {
+	fexp:=getExp(sum, base)
 	if fexp >= 1 {
-		cnst:=getConst(sum, b, fexp)
+		cnst:=getConst(sum, base, fexp)
 		return cnst, int(math.Trunc(fexp))
 	}
 
@@ -88,16 +86,16 @@ func getConstAndExp(sum int, base Base) (int, int) {
 func (bc BaseConverter) FromBase10(sum int, base Base) []int {
 	var result []int
 
-	b:=float64(base.Size())
+	b:=base.Size()
 	for {
-		c, i:=getConstAndExp(sum, base)
+		c, i:=getConstAndExp(sum, b)
 		if len(result) < i+1 {
 			result=make([]int, i+1)
 		}
 		index:=len(result) - (i+1)
 		result[index]=c
 
-		sum-=getValue(c, int(b), float64(i))
+		sum-=getValue(c, b, float64(i))
 		if sum == 0 {
 			break
 		}
