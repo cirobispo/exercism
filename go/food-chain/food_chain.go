@@ -1,12 +1,5 @@
 package foodchain
 
-<<<<<<< HEAD
-//
-// HOW I HATE THIS STUPID SONGS. BUNCH OF CRAP TEXT TO PUT TOGETHER
-//
-
-=======
->>>>>>> 3e7b859 (food-chain complete)
 import (
 	"fmt"
 	"strings"
@@ -85,7 +78,6 @@ func sheSwallowedToCatch(swallow, catch animal) string {
 	}
 	return result
 }
-
 func sheWillDie(swallow animal) string {
 	return fmt.Sprintf("I don't know why she swallowed the %s. Perhaps she'll die.", swallow.name)
 }
