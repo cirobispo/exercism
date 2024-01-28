@@ -1,12 +1,5 @@
 package foodchain
 
-<<<<<<< HEAD
-//
-// HOW I HATE THIS STUPID SONGS. BUNCH OF CRAP TEXT TO PUT TOGETHER
-//
-
-=======
->>>>>>> 1878da2 (food-chain complete)
 import (
 	"fmt"
 	"strings"
