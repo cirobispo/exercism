@@ -52,8 +52,7 @@ func (p puzzleMapping) checkWordIn(word string, rowPos, colPos, vWay, hWay int) 
 	}
 
 	result := make([][]int, 0)
-	if found {
-		size := len(word)
+	if size := len(word); found { // just to let code 1 line smaller
 		result = append(result, []int{colPos, rowPos})
 		result = append(result, []int{colPos + (size-1)*hWay, rowPos + (size-1)*vWay})
 	}
