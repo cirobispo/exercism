@@ -61,23 +61,27 @@ func (p puzzleMapping) checkWordIn(word string, rowPos, colPos, vWay, hWay int) 
 }
 
 func (p puzzleMapping) Exists(word string) (bool, [][]int) {
-	if p.height > 0 && p.width > 0 {
-		for l := 0; l < p.height; l++ {
-			for c := 0; c < p.width; c++ {
-				if dirs := p.wordFitsIn(len(word), l, c); len(dirs) > 0 {
-					for i := range dirs {
-						dir := dirs[i]
-						found, result := p.checkWordIn(word, l, c, dir[0], dir[1])
-						if found {
-							return found, result
-						}
+	if p.height < 0 || p.width < 0 {
+		return false, make([][]int, 0)
+	}
+
+	found, result := false, [][]int{}
+	for l := 0; l < p.height; l++ {
+		for c := 0; c < p.width; c++ {
+			if dirs := p.wordFitsIn(len(word), l, c); len(dirs) > 0 {
+				for i := range dirs {
+					dir := dirs[i]
+					found, result = p.checkWordIn(word, l, c, dir[0], dir[1])
+					if found {
+						goto respond
 					}
 				}
 			}
 		}
 	}
 
-	return false, make([][]int, 0)
+respond:
+	return found, result
 }
 
 func addToResult(word string, pm *puzzleMapping, result map[string][2][2]int) error {
