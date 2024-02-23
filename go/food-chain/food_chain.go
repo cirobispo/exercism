@@ -1,9 +1,12 @@
 package foodchain
 
+<<<<<<< HEAD
 //
 // HOW I HATE THIS STUPID SONGS. BUNCH OF CRAP TEXT TO PUT TOGETHER
 //
 
+=======
+>>>>>>> 3e7b859 (food-chain complete)
 import (
 	"fmt"
 	"strings"
