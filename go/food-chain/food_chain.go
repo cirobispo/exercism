@@ -82,6 +82,7 @@ func sheSwallowedToCatch(swallow, catch animal) string {
 	}
 	return result
 }
+
 func sheWillDie(swallow animal) string {
 	return fmt.Sprintf("I don't know why she swallowed the %s. Perhaps she'll die.", swallow.name)
 }
