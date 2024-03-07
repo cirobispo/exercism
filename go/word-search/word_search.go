@@ -69,7 +69,7 @@ func (p puzzleMapping) Exists(word string) (bool, [][]int) {
 	found, result := false, [][]int{}
 	for l := 0; l < p.height; l++ {
 		for c := 0; c < p.width; c++ {
-			dirs := p.wordFitsIn(len(word), l, c);
+			dirs := p.wordFitsIn(len(word), l, c)
 			for i := range dirs {
 				dir := dirs[i]
 				found, result = p.checkWordIn(word, l, c, dir[0], dir[1])
