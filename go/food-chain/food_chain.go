@@ -1,13 +1,13 @@
 package foodchain
 
-//
-// HOW I HATE THIS STUPID SONGS. BUNCH OF CRAP TEXT TO PUT TOGETHER
-//
-
 import (
 	"fmt"
 	"strings"
 )
+
+//
+// HOW I HATE THIS STUPID SONGS. BUNCH OF CRAP TEXT TO PUT TOGETHER
+//
 
 type animal struct {
 	name        string
