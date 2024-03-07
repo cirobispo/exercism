@@ -62,10 +62,6 @@ func (p puzzleMapping) checkWordIn(word string, rowPos, colPos, vWay, hWay int) 
 }
 
 func (p puzzleMapping) Exists(word string) (bool, [][]int) {
-	if p.height < 0 || p.width < 0 {
-		return false, make([][]int, 0)
-	}
-
 	found, result := false, [][]int{}
 	for l := 0; l < p.height; l++ {
 		for c := 0; c < p.width; c++ {
