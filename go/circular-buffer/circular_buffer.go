@@ -35,8 +35,7 @@ func (b *Buffer) WriteByte(c byte) error {
 	}
 
 	temp := []byte{c}
-	temp = append(temp, b.data...)
-	b.data = temp
+	b.data = append(temp, b.data...)
 
 	return nil
 }
