@@ -6,5 +6,6 @@ import (
 )
 
 func main() {
-	fmt.Println(brackets.Bracket("([{}({}[])])"))
+	// fmt.Println(brackets.Bracket("([{}({}[])])"))
+	fmt.Println(brackets.Bracket("}{"))
 }
