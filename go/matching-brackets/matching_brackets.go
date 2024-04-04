@@ -1,10 +1,9 @@
 package brackets
 
-type Blocking struct {
-	parent 	 *Blocking
-	who      BracketType
-	isClosed bool
-	children []*Blocking
+type MBracket struct {
+	bt         BracketType
+	childCount int
+	isOpen     bool
 }
 
 type BracketType int
@@ -62,73 +61,48 @@ func WhichBracket(char rune) (BracketType, BracketOrientation) {
 	}
 }
 
-func NewBlocking(char rune, parent *Blocking) *Blocking {
-	bt, _ := WhichBracket(char)
-	return &Blocking{parent:parent, who: bt, isClosed: false, children: make([]*Blocking, 0)}
-}
+func isBracketsInPairs(input string) bool {
+	brackets_found := make([]*MBracket, 0)
 
-func (b *Blocking) AddChild(child *Blocking) {
-	b.children = append(b.children, child)
-}
-
-func (b *Blocking) Close() {
-	b.isClosed = true
-}
-
-func BuildBlockingPairs(input string) *Blocking {
-	var result *Blocking
-
-	addToResult:=func (char rune) {
-		if result == nil {
-			result=NewBlocking(char, nil)
-		} else {
-			temp:=NewBlocking(char, result)
-			result.AddChild(temp)
-			result=temp
-		}
-	}
-
-	for i:=range input {
-		char:=rune(input[i])
-		if isAnyBracket(char) {
-			bt, bo:=WhichBracket(char)
-			if bo == boRight {
-				if result == nil || result.isClosed || result.who != bt {
-					addToResult(char)
-					break
-				}
-				result.Close()
-				result=result.parent
-				continue
+	lastOpen := func() *MBracket {
+		size := len(brackets_found)
+		for i := size - 1; i >= 0; i-- {
+			bf := brackets_found[i]
+			if bf.isOpen {
+				return bf
 			}
-
-			addToResult(char)
 		}
-	}
-	return result
-}
 
-func CheckBlocking(b *Blocking) bool {
-	if !b.isClosed {
-		return false
+		return nil
+	}
+
+	for i := range input {
+		char := rune(input[i])
+		if isAnyBracket(char) {
+			bt, bo := WhichBracket(char)
+			lb := lastOpen()
+			if bo == boRight && lb != nil && lb.bt == bt {
+				lb.isOpen = false
+			} else {
+				brackets_found = append(brackets_found, &MBracket{bt: bt, childCount: 0, isOpen: true})
+				if lb != nil && lb.isOpen {
+					lb.childCount++
+				}
+			}
+		}
 	}
 
 	result := true
-	for i := range b.children {
-		child := b.children[i]
-		if result = CheckBlocking(child); !result {
+	for i := range brackets_found {
+		bf := brackets_found[i]
+		if bf.isOpen {
+			result = false
 			break
 		}
 	}
-
 	return result
 }
 
 func Bracket(input string) bool {
-	b := BuildBlockingPairs(input)
-	if b == nil {
-		return true
-	}
-
-	return CheckBlocking(b)
+	return isBracketsInPairs(input)
 }
