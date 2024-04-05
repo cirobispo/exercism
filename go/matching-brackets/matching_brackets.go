@@ -1,7 +1,7 @@
 package brackets
 
 type Blocking struct {
-	parent 	 *Blocking
+	parent   *Blocking
 	who      BracketType
 	isClosed bool
 	children []*Blocking
@@ -64,7 +64,7 @@ func WhichBracket(char rune) (BracketType, BracketOrientation) {
 
 func NewBlocking(char rune, parent *Blocking) *Blocking {
 	bt, _ := WhichBracket(char)
-	return &Blocking{parent:parent, who: bt, isClosed: false, children: make([]*Blocking, 0)}
+	return &Blocking{parent: parent, who: bt, isClosed: false, children: make([]*Blocking, 0)}
 }
 
 func (b *Blocking) AddChild(child *Blocking) {
@@ -78,27 +78,27 @@ func (b *Blocking) Close() {
 func BuildBlockingPairs(input string) *Blocking {
 	var result *Blocking
 
-	addToResult:=func (char rune) {
+	addToResult := func(char rune) {
 		if result == nil {
-			result=NewBlocking(char, nil)
+			result = NewBlocking(char, nil)
 		} else {
-			temp:=NewBlocking(char, result)
+			temp := NewBlocking(char, result)
 			result.AddChild(temp)
-			result=temp
+			result = temp
 		}
 	}
 
-	for i:=range input {
-		char:=rune(input[i])
+	for i := range input {
+		char := rune(input[i])
 		if isAnyBracket(char) {
-			bt, bo:=WhichBracket(char)
+			bt, bo := WhichBracket(char)
 			if bo == boRight {
 				if result == nil || result.isClosed || result.who != bt {
 					addToResult(char)
 					break
 				}
 				result.Close()
-				result=result.parent
+				result = result.parent
 				continue
 			}
 
