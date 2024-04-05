@@ -1,15 +1,20 @@
 package paasio
 
-import "io"
+import (
+	"io"
+	"sync"
+)
 
 // Define readCounter and writeCounter types here.
 type readCounter struct {
+	rmx         sync.Mutex
 	reader      io.Reader
 	rBytesCount int64
 	rCallsCount int
 }
 
 type writeCounter struct {
+	wmx         sync.Mutex
 	writer      io.Writer
 	wBytesCount int64
 	wCallsCount int
@@ -29,14 +34,21 @@ func (rc *readCounter) Read(p []byte) (int, error) {
 	if count, err = rc.reader.Read(p); err != nil {
 		return count, err
 	}
+
+	rc.rmx.Lock()
 	rc.rBytesCount += int64(count)
 	rc.rCallsCount++
+	rc.rmx.Unlock()
 
 	return count, err
 }
 
-func (rc readCounter) ReadCount() (int64, int) {
-	return rc.rBytesCount, rc.rCallsCount
+func (rc *readCounter) ReadCount() (int64, int) {
+	rc.rmx.Lock()
+	bc, cc := rc.rBytesCount, rc.rCallsCount
+	rc.rmx.Unlock()
+
+	return bc, cc
 }
 
 func (wc *writeCounter) Write(p []byte) (int, error) {
@@ -45,22 +57,29 @@ func (wc *writeCounter) Write(p []byte) (int, error) {
 	if count, err = wc.writer.Write(p); err != nil {
 		return count, err
 	}
+
+	wc.wmx.Lock()
 	wc.wBytesCount += int64(count)
 	wc.wCallsCount++
+	wc.wmx.Unlock()
 
 	return count, err
 }
 
-func (wc writeCounter) WriteCount() (n int64, nops int) {
-	return wc.wBytesCount, wc.wCallsCount
+func (wc *writeCounter) WriteCount() (n int64, nops int) {
+	wc.wmx.Lock()
+	bc, cc := wc.wBytesCount, wc.wCallsCount
+	wc.wmx.Unlock()
+
+	return bc, cc
 }
 
 func NewReadCounter(reader io.Reader) ReadCounter {
-	return &readCounter{reader: reader, rBytesCount: 0}
+	return &readCounter{rmx: sync.Mutex{}, reader: reader, rBytesCount: 0}
 }
 
 func NewWriteCounter(writer io.Writer) WriteCounter {
-	return &writeCounter{writer: writer, wBytesCount: 0}
+	return &writeCounter{wmx: sync.Mutex{}, writer: writer, wBytesCount: 0}
 }
 
 func NewReadWriteCounter(readwriter io.ReadWriter) ReadWriteCounter {
