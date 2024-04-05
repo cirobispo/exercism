@@ -29,61 +29,64 @@ type readWriteCounter struct {
 }
 
 func (rc *readCounter) Read(p []byte) (int, error) {
-	count := 0
-	var err error
-	if count, err = rc.reader.Read(p); err != nil {
+	var count int
+	if c, err := rc.reader.Read(p); err != nil {
 		return count, err
+	} else {
+		count = c
 	}
 
+	defer rc.rmx.Unlock()
 	rc.rmx.Lock()
 	rc.rBytesCount += int64(count)
 	rc.rCallsCount++
-	rc.rmx.Unlock()
 
-	return count, err
+	return count, nil
 }
 
 func (rc *readCounter) ReadCount() (int64, int) {
+	defer rc.rmx.Unlock()
 	rc.rmx.Lock()
 	bc, cc := rc.rBytesCount, rc.rCallsCount
-	rc.rmx.Unlock()
 
 	return bc, cc
 }
 
 func (wc *writeCounter) Write(p []byte) (int, error) {
-	count := 0
-	var err error
-	if count, err = wc.writer.Write(p); err != nil {
-		return count, err
+	var count int
+	if c, err := wc.writer.Write(p); err != nil {
+		return c, err
+	} else {
+		count = c
 	}
 
+	defer wc.wmx.Unlock()
 	wc.wmx.Lock()
 	wc.wBytesCount += int64(count)
 	wc.wCallsCount++
-	wc.wmx.Unlock()
 
-	return count, err
+	return count, nil
 }
 
 func (wc *writeCounter) WriteCount() (n int64, nops int) {
+	defer wc.wmx.Unlock()
 	wc.wmx.Lock()
 	bc, cc := wc.wBytesCount, wc.wCallsCount
-	wc.wmx.Unlock()
 
 	return bc, cc
 }
 
 func NewReadCounter(reader io.Reader) ReadCounter {
-	return &readCounter{rmx: sync.Mutex{}, reader: reader, rBytesCount: 0}
+	return &readCounter{reader: reader}
 }
 
 func NewWriteCounter(writer io.Writer) WriteCounter {
-	return &writeCounter{wmx: sync.Mutex{}, writer: writer, wBytesCount: 0}
+	return &writeCounter{writer: writer}
 }
 
 func NewReadWriteCounter(readwriter io.ReadWriter) ReadWriteCounter {
-	r := readCounter{reader: readwriter}
-	w := writeCounter{writer: readwriter}
-	return &readWriteCounter{readCounter: r, writeCounter: w}
+	return &readWriteCounter{
+		readCounter:  readCounter{reader: readwriter},
+		writeCounter: writeCounter{writer: readwriter},
+	}
 }
