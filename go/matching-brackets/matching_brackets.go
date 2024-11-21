@@ -1,10 +1,7 @@
 package brackets
 
 type Blocking struct {
-<<<<<<< HEAD
 	parent   *Blocking
-=======
->>>>>>> 8b69377 (matching-brackets)
 	who      BracketType
 	isClosed bool
 	children []*Blocking
@@ -24,11 +21,7 @@ const (
 	boRight BracketOrientation = 1
 )
 
-<<<<<<< HEAD
 func isRegularBracket(char rune) bool {
-=======
-func isBracket(char rune) bool {
->>>>>>> 8b69377 (matching-brackets)
 	return char == '(' || char == ')'
 }
 
@@ -41,11 +34,7 @@ func isCurlyBracket(char rune) bool {
 }
 
 func isAnyBracket(char rune) bool {
-<<<<<<< HEAD
 	return isRegularBracket(char) ||
-=======
-	return isBracket(char) ||
->>>>>>> 8b69377 (matching-brackets)
 		isSquaredBracket(char) ||
 		isCurlyBracket(char)
 }
@@ -73,15 +62,9 @@ func WhichBracket(char rune) (BracketType, BracketOrientation) {
 	}
 }
 
-<<<<<<< HEAD
 func NewBlocking(char rune, parent *Blocking) *Blocking {
 	bt, _ := WhichBracket(char)
 	return &Blocking{parent: parent, who: bt, isClosed: false, children: make([]*Blocking, 0)}
-=======
-func NewBlocking(char rune) *Blocking {
-	bt, _ := WhichBracket(char)
-	return &Blocking{who: bt, isClosed: false, children: make([]*Blocking, 0)}
->>>>>>> 8b69377 (matching-brackets)
 }
 
 func (b *Blocking) AddChild(child *Blocking) {
@@ -95,7 +78,6 @@ func (b *Blocking) Close() {
 func BuildBlockingPairs(input string) *Blocking {
 	var result *Blocking
 
-<<<<<<< HEAD
 	addToResult := func(char rune) {
 		if result == nil {
 			result = NewBlocking(char, nil)
@@ -126,46 +108,6 @@ func BuildBlockingPairs(input string) *Blocking {
 	return result
 }
 
-=======
-	var temp *Blocking
-	for i := range input {
-		char := rune(input[i])
-		if !isAnyBracket(char) {
-			continue
-		}
-
-		bt, bo := WhichBracket(char)
-		if temp == nil && bo == boLeft {
-			temp = NewBlocking(char)
-			if result == nil {
-				result = temp
-			} else {
-				result.AddChild(temp)
-			}
-		} else if temp != nil && bo == boLeft {
-			temp = NewBlocking(char)
-			result.AddChild(temp)
-		} else if temp == nil && bo == boRight {
-			break
-		} else if temp != nil && bo == boRight {
-			if bt == temp.who {
-				temp.Close()
-			} else {
-				break
-			}
-
-			temp = nil
-		}
-	}
-
-	return result
-}
-
-// if result != nil {
-// 	result = parents[len(parents)-1]
-// }
-
->>>>>>> 8b69377 (matching-brackets)
 func CheckBlocking(b *Blocking) bool {
 	if !b.isClosed {
 		return false
