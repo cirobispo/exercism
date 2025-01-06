@@ -13,7 +13,7 @@ Host github.com-cirobispo
     IdentityFile ~/.ssh/cirobispo_rsa
     IdentitiesOnly yes
 
-4. inicie o ssh-agent com: exec ssh-agent bash
+4. inicie o ssh-agent com: exec ssh-agent "bash", "zsh", etc
 5. coloque a chave privada na memoria do agent com: ssh-add ~/.ssh/arquivo_chave_privada
 6. teste se a chave está adicionada com: ssh -Tv github.com-cirobispo
 7. crie, no diretorio ~o arquivo .gitconfig e coloque:
