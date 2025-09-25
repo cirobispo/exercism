@@ -1,0 +1,4 @@
+exec ssh-agent zsh
+ssh-add ~/.ssh/digitalbusinesscard
+ssh-add ~/.ssh/cirobispo_exercism
+ssh-add ~/.ssh/cirobispo_tennis
